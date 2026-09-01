@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Archive Player — cursos por link</title>
+<style>
+  :root{
+    --bg:#0d1117;--card:#161b22;--border:#30363d;
+    --txt:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--accent2:#bc8cff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  button{font-family:inherit}
+  a{color:var(--accent)}
+
+  /* ── X discreto (canto sup. direito do menu → volta para a home) ── */
+  #voltar-home{position:fixed;top:12px;right:12px;z-index:500;width:32px;height:32px;
+    display:grid;place-items:center;border:1px solid var(--border);border-radius:8px;
+    background:rgba(22,27,34,.85);color:var(--muted);font-size:13px;line-height:1;
+    cursor:pointer;opacity:.5;transition:.15s}
+  #voltar-home:hover{opacity:1;color:#f85149;border-color:#f85149}
+
+  /* ── Telas centrais ── */
+  .tela{min-height:100dvh;display:grid;place-items:center;padding:24px 18px}
+  .cartao{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
+    border-radius:16px;padding:28px;animation:cm-in .3s ease}
+  .cm-header{text-align:center;margin-bottom:28px}
+  .cm-badge{display:inline-block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:4px 14px;margin-bottom:14px}
+  .cm-badge.erro{color:#f85149;border-color:#f85149}
+  .cm-title{font-size:24px;font-weight:700;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin:0 0 8px}
+  .cm-title.plain{background:none;color:var(--txt);-webkit-text-fill-color:var(--txt)}
+  .cm-meta{color:var(--muted);font-size:13px}
+
+  /* home */
+  .form-url{display:flex;gap:8px}
+  #url{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    color:var(--txt);font-size:14px;padding:13px 14px;outline:0;transition:border-color .15s;font-family:inherit}
+  #url:focus{border-color:var(--accent)}
+  #url::placeholder{color:#484f58}
+  .btn-primario{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+    background:var(--accent);color:#04121f;border:0;border-radius:10px;
+    padding:0 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+  .btn-primario:hover{background:#79b8ff}
+  .btn-primario:active{transform:translateY(1px)}
+  #home-erro{color:#f85149;font-size:12.5px;margin-top:10px}
+  .cm-dica{color:var(--muted);font-size:12px;line-height:1.7;margin-top:20px;text-align:center}
+
+  /* loading */
+  .centro{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+  .cm-spinner{width:30px;height:30px;border-radius:50%;
+    border:3px solid var(--border);border-top-color:var(--accent);
+    animation:cm-spin .8s linear infinite}
+  @keyframes cm-spin{to{transform:rotate(360deg)}}
+  #load-url{color:var(--muted);font-size:12px;max-width:540px;word-break:break-all}
+
+  /* erro */
+  .cartao-erro{border-color:#f8514955}
+  .erro-msg{color:var(--muted);font-size:13px;line-height:1.7;text-align:center}
+  .erro-acoes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .btn-ghost{display:inline-flex;align-items:center;background:var(--bg);border:1px solid var(--border);
+    color:var(--txt);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;
+    text-decoration:none;transition:.15s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  #area-manual{margin-top:20px;border-top:1px solid var(--border);padding-top:16px}
+  #area-manual summary{color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+  #area-manual summary:hover{color:var(--accent)}
+  #txt-manual{width:100%;height:130px;margin-top:12px;background:var(--bg);color:var(--txt);
+    border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;
+    font-family:ui-monospace,Consolas,monospace;resize:vertical;outline:0}
+  #txt-manual:focus{border-color:var(--accent)}
+  #manual-erro{color:#f85149;font-size:12px;margin-top:8px}
+
+  /* ── Menu de módulos/aulas (visual do script) ── */
+  #course-menu-ai{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:28px;max-width:860px;margin:24px auto;color:var(--txt)}
+  .cm-module{background:var(--card);border:1px solid var(--border);
+    border-radius:12px;margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+  .cm-module:hover{border-color:var(--accent)}
+  .cm-module-head{display:flex;align-items:center;gap:12px;padding:14px 18px;
+    cursor:pointer;user-select:none;font-weight:600;font-size:14px}
+  .cm-module-head:hover{background:#1c2129}
+  .cm-arrow{transition:transform .25s;color:var(--accent);font-size:12px}
+  .cm-module.open .cm-arrow{transform:rotate(90deg)}
+  .cm-count{margin-left:auto;font-size:11px;color:var(--muted);
+    background:#21262d;border-radius:99px;padding:3px 10px}
+  .cm-lessons{display:none;border-top:1px solid var(--border)}
+  .cm-module.open .cm-lessons{display:block}
+  .cm-lesson{border-bottom:1px solid #21262d;transition:background .15s}
+  .cm-lesson:last-child{border-bottom:none}
+  .cm-lesson:hover{background:#1c2129}
+  .cm-link{display:flex;align-items:center;gap:12px;
+    padding:11px 18px;color:var(--txt);text-decoration:none;cursor:pointer;transition:padding-left .15s}
+  .cm-lesson:hover .cm-link{padding-left:24px}
+  .cm-num{color:var(--accent2);font-size:11px;font-weight:700;min-width:22px}
+  .cm-name{flex:1;word-break:break-word}
+  .cm-lesson:hover .cm-name{color:var(--accent)}
+
+  /* ── Modal (visual do script) ── */
+  #course-modal-ai{position:fixed;inset:0;z-index:99999;display:none;
+    background:rgba(1,4,9,.82);backdrop-filter:blur(6px);color:var(--txt)}
+  #course-modal-ai.open{display:flex}
+  .cm-modal-box{margin:auto;width:calc(100vw - 96px);height:calc(100vh - 96px);height:calc(100dvh - 96px);
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 24px 64px rgba(0,0,0,.55);animation:cm-in .22s ease}
+  @keyframes cm-in{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+  .cm-modal-head{display:flex;align-items:center;gap:12px;
+    padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg)}
+  .cm-modal-title{flex:1;font-size:14px;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cm-modal-ext,.cm-modal-close{display:flex;align-items:center;justify-content:center;
+    height:32px;min-width:32px;padding:0 10px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--border);background:var(--card);color:var(--muted);
+    font-size:13px;text-decoration:none;transition:.15s;font-family:inherit}
+  .cm-modal-ext:hover{color:var(--accent);border-color:var(--accent)}
+  .cm-modal-close:hover{color:#f85149;border-color:#f85149}
+  .cm-modal-body{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg)}
+  .cm-modal-body iframe{flex:1;min-height:0;width:100%;border:0;display:block;background:#fff}
+  .cm-modal-body video{flex:1;min-height:0;width:100%;background:#000;display:block}
+  .cm-modal-loading{position:absolute;inset:0;display:flex;flex-direction:column;
+    gap:12px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;pointer-events:none}
+  .cm-speed-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:10px 16px;border-top:1px solid var(--border);background:var(--bg)}
+  .cm-speed-label{font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:1px;margin-right:4px}
+  .cm-speed-btn{font-size:12px;font-weight:600;color:var(--muted);
+    background:var(--card);border:1px solid var(--border);border-radius:99px;
+    padding:6px 14px;cursor:pointer;transition:.15s}
+  .cm-speed-btn:hover{color:var(--txt);border-color:var(--accent)}
+  .cm-speed-btn.active{color:#fff;background:var(--accent);border-color:var(--accent)}
+
+  @media(max-width:640px){
+    .cm-modal-box{width:calc(100vw - 20px);height:calc(100vh - 20px);height:calc(100dvh - 20px)}
+    .form-url{flex-direction:column}
+    .btn-primario{padding:12px 20px;justify-content:center}
+    #course-menu-ai{margin:16px 10px;padding:20px 16px}
+  }
+</style>
+</head>
+<body>
+
+  <!-- X discreto: fecha o curso atual e volta para a área de informar link -->
+  <button id="voltar-home" type="button" hidden
+          title="Fechar curso e informar outro link (Esc)" aria-label="Fechar curso">✕</button>
+
+  <!-- Tela 1: informar o link -->
+  <section id="home" class="tela">
+    <div class="cartao">
+      <div class="cm-header">
+        <span class="cm-badge">🎓 Archive Player</span>
+        <h1 class="cm-title">Abrir curso por link</h1>
+        <p class="cm-meta">Cole o link da listagem — ex.: <b>view_archive.php?archive=/7/items/…/6186.zip</b></p>
+      </div>
+      <form id="form" class="form-url" novalidate>
+        <input id="url" type="text" inputmode="url" autocomplete="off"
+               autocapitalize="off" spellcheck="false"
+               placeholder="https://ia800800.us.archive.org/view_archive.php?archive=/7/items/…">
+        <button type="submit" class="btn-primario">Abrir curso →</button>
+      </form>
+      <p id="home-erro" hidden></p>
+      <p class="cm-dica">
+        O curso abre com módulos e aulas; cada aula abre em modal quase em tela cheia — vídeos com
+        controle de velocidade (1× a 2×, mantido entre aulas), páginas HTML renderizadas e atalho
+        <b>Esc</b> para fechar. O ✕ no canto superior direito volta para cá.
+      </p>
+    </div>
+  </section>
+
+  <!-- Tela 2: carregando a listagem -->
+  <section id="tela-load" class="tela" hidden>
+    <div class="centro">
+      <div class="cm-spinner"></div>
+      <p class="cm-meta">Carregando listagem do curso…</p>
+      <p id="load-url"></p>
+    </div>
+  </section>
+
+  <!-- Tela 3: falha ao baixar / parsear -->
+  <section id="tela-erro" class="tela" hidden>
+    <div class="cartao cartao-erro">
+      <div class="cm-header">
+        <span class="cm-badge erro">⚠ Erro</span>
+        <h1 class="cm-title plain">Não deu para carregar</h1>
+      </div>
+      <p id="erro-msg" class="erro-msg"></p>
+      <div class="erro-acoes">
+        <button id="btn-retry" type="button" class="btn-ghost">↻ Tentar de novo</button>
+        <a id="erro-nova-aba" class="btn-ghost" href="#" target="_blank" rel="noopener">↗ Abrir listagem em nova aba</a>
+        <button id="btn-voltar" type="button" class="btn-ghost">← Informar outro link</button>
+      </div>
+      <details id="area-manual">
+        <summary>Plano B: colar o HTML da página manualmente</summary>
+        <p class="cm-meta" style="text-align:left;margin-top:10px">
+          Abra o link em outra aba, exiba o código-fonte (Ctrl+U ou "Salvar página"), copie tudo e cole abaixo.
+        </p>
+        <textarea id="txt-manual" spellcheck="false" placeholder="<!doctype html> …"></textarea>
+        <button id="btn-processar" type="button" class="btn-primario" style="margin-top:10px">Processar HTML colado</button>
+        <p id="manual-erro" hidden></p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Tela 4: menu de módulos/aulas (mesma marcação do script) -->
+  <div id="wrap-menu" hidden></div>
+
+  <!-- Modal de aula (mesma marcação do script) -->
+  <div id="course-modal-ai" role="dialog" aria-modal="true">
+    <div class="cm-modal-box">
+      <div class="cm-modal-head">
+        <span class="cm-modal-title"></span>
+        <a class="cm-modal-ext" href="#" target="_blank" rel="noopener" title="Abrir em nova aba">↗ Nova aba</a>
+        <button class="cm-modal-close" type="button" title="Fechar (Esc)">✕</button>
+      </div>
+      <div class="cm-modal-body">
+        <div class="cm-modal-loading"><div class="cm-spinner"></div>Carregando…</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Referências ──────────────────────────────────────────────────
+  const $ = s => document.querySelector(s);
+  const form = $('#form'), input = $('#url'), homeErro = $('#home-erro');
+  const telas = { home: $('#home'), load: $('#tela-load'), erro: $('#tela-erro'), menu: $('#wrap-menu') };
+  const wrapMenu = telas.menu, loadUrl = $('#load-url');
+  const erroMsg = $('#erro-msg'), btnRetry = $('#btn-retry'),
+        linkNovaAbaErro = $('#erro-nova-aba'), btnVoltarErro = $('#btn-voltar');
+  const areaManual = $('#area-manual'), txtManual = $('#txt-manual'),
+        btnProcessar = $('#btn-processar'), manualErro = $('#manual-erro');
+  const voltarHome = $('#voltar-home');
+  const modal = $('#course-modal-ai');
+  const mBody = modal.querySelector('.cm-modal-body');
+  const mLoading = modal.querySelector('.cm-modal-loading');
+
+  const CHAVE_ULTIMA = 'curso:url';
+  let urlAtual = null;        // URL da listagem carregada
+  let fallbackAnchors = [];   // aulas sem <a> direto (portado do script)
+
+  const esc = s => String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+  const normalizar = v => {
+    v = (v || '').trim();
+    if (!v) return '';
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(v)) v = 'https://' + v.replace(/^\/+/, '');
+    return v;
+  };
+
+  // ── Estados das telas ────────────────────────────────────────────
+  function mostrar(nome) {
+    for (const [k, el] of Object.entries(telas)) el.hidden = k !== nome;
+    voltarHome.hidden = nome !== 'menu';
+    if (nome !== 'menu') fecharModal();
+  }
+
+  function irParaHome() {
+    fecharModal();
+    mostrar('home');
+    try { history.replaceState(null, '', location.pathname); } catch {}
+    setTimeout(() => input.focus({ preventScroll: true }), 60);
+  }
+
+  // ── Fetch com fallback de proxies (o contexto mudou: agora somos
+  //    outra origem, então o HTML da listagem pode precisar de proxy) ──
+  const ROTAS = [
+    u => u, // direto (os nós do archive.org costumam liberar CORS)
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  ];
+
+  async function fetchTexto(url) {
+    for (const rota of ROTAS) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 20000);
+      try {
+        const r = await fetch(rota(url), { signal: ctrl.signal });
+        if (r.ok) {
+          const txt = await r.text();
+          if (txt && txt.includes('<')) return txt; // sanity: parece HTML
+        }
+      } catch { /* tenta a próxima rota */ }
+      finally { clearTimeout(t); }
+    }
+    throw new Error('Não consegui baixar a página (acesso direto e proxies falharam). Use o plano B abaixo.');
+  }
+
+  // ── 1. Extração (portado do script) ──────────────────────────────
+  const isHeaderCol = t => /^(file|as jpg|timestamp|size)$/i.test(t);
+
+  const buildRows = trs => trs.map(tr => {
+    const cells = [...tr.querySelectorAll('th,td')].map(c => c.textContent.trim());
+    if (!cells.length) return null;
+
+    const file = cells.find(c => c && !isHeaderCol(c));
+    if (!file) return null;
+
+    const anchors = [...tr.querySelectorAll('a[href]')].filter(a => {
+      const h = (a.getAttribute('href') || '').trim();
+      return h && !h.startsWith('javascript:') && h !== '#' && h !== '../';
+    });
+
+    const base = file.split('/').pop();
+
+    const a =
+      anchors.find(x => x.textContent.trim() === file) ||
+      anchors.find(x => x.textContent.trim() === base) ||
+      anchors.find(x => { try { return decodeURIComponent(x.getAttribute('href')).includes(base); } catch { return false; } }) ||
+      anchors.find(x => !/as\s*jpg/i.test(x.textContent)) ||
+      anchors[0] || null;
+
+    return { file, href: a ? a.href : null, anchor: a };
+  }).filter(Boolean);
+
+  function parseListagem(html, pageUrl) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    // injeita <base> para que a.href resolva relativo à URL real da listagem
+    if (!doc.querySelector('base')) {
+      const b = doc.createElement('base');
+      b.setAttribute('href', pageUrl);
+      doc.head.appendChild(b);
+    }
+    // procura a tabela com mais links (a listagem do zip)
+    let trs = [];
+    const melhorTbody = [...doc.querySelectorAll('tbody')]
+      .sort((x, y) => y.querySelectorAll('a[href]').length - x.querySelectorAll('a[href]').length)[0];
+    if (melhorTbody) trs = [...melhorTbody.querySelectorAll('tr')];
+    if (!trs.length) trs = [...doc.querySelectorAll('tr')].filter(tr => tr.querySelector('a[href]'));
+    return buildRows(trs);
+  }
+
+  // ── 2. Detecta o nome do curso (portado) ─────────────────────────
+  const detectCourse = paths => {
+    if (paths.length === 1) {
+      const i = paths[0].indexOf('/');
+      return i > -1 ? paths[0].slice(0, i + 1) : '';
+    }
+    let prefix = paths[0];
+    for (const p of paths.slice(1)) {
+      let i = 0;
+      while (i < prefix.length && i < p.length && prefix[i] === p[i]) i++;
+      prefix = prefix.slice(0, i);
+    }
+    const cut = prefix.lastIndexOf('/');
+    return cut > -1 ? prefix.slice(0, cut + 1) : '';
+  };
+
+  // ── 3. Ignora pastas, agrupa por módulo (portado) ────────────────
+  const isDirectory = r => {
+    if (r.file.endsWith('/')) return true;
+    const last = r.file.replace(/\/+$/, '').split('/').pop();
+    return !/\.[^./]+$/.test(last);
+  };
+
+  const agrupar = rows => {
+    const course = detectCourse(rows.map(r => r.file));
+    const modules = new Map();
+    let totalLessons = 0;
+    rows.forEach(r => {
+      if (isDirectory(r)) return;
+      let path = r.file.startsWith(course) ? r.file.slice(course.length) : r.file;
+      const parts = path.split('/').filter(Boolean);
+      if (!parts.length) return;
+      const lesson = parts.pop();
+      const module = parts.join(' / ') || 'Arquivos';
+      if (!modules.has(module)) modules.set(module, []);
+      modules.get(module).push({ ...r, lesson });
+      totalLessons++;
+    });
+    return { course, modules, totalLessons };
+  };
+
+  // ── 4. Modal (portado: spinner, iframe, vídeo+velocidade, srcdoc) ─
+  const RATES = [1, 1.25, 1.5, 1.75, 2];
+  const VIDEO_EXT = new Set(['mp4', 'webm', 'm4v', 'mov', 'ogv']);
+  const HTML_EXT  = new Set(['html', 'htm']);
+  let currentRate = 1; // velocidade mantida entre aulas
+
+  // Detecta a extensão no pathname OU em parâmetros da URL
+  // (ex.: view_archive.php?archive=...&file=video.mp4)
+  const getExt = href => {
+    try {
+      const u = new URL(href, location.href);
+      const fromStr = str => {
+        if (!str) return '';
+        const last = str.split(/[?#&]/)[0].split('/').pop();
+        const m = last.match(/\.([a-z0-9]+)$/i);
+        return m ? m[1].toLowerCase() : '';
+      };
+      return fromStr(u.pathname) ||
+             fromStr(u.searchParams.get('file')) ||
+             fromStr(u.search) || '';
+    } catch { return ''; }
+  };
+
+  const clearBody = () => {
+    mBody.querySelectorAll('iframe, video, .cm-speed-bar').forEach(el => el.remove());
+    mLoading.style.display = 'none';
+  };
+
+  const makeIframe = (src, srcdoc) => {
+    mLoading.style.display = 'flex';
+    const iframe = document.createElement('iframe');
+    iframe.addEventListener('load', () => { mLoading.style.display = 'none'; });
+    setTimeout(() => { mLoading.style.display = 'none'; }, 8000); // segurança
+    if (srcdoc != null) iframe.srcdoc = srcdoc;
+    else iframe.src = src;
+    mBody.appendChild(iframe);
+  };
+
+  const buildSpeedBar = video => {
+    const bar = document.createElement('div');
+    bar.className = 'cm-speed-bar';
+    bar.innerHTML = `<span class="cm-speed-label">⏩ Velocidade</span>`;
+    RATES.forEach(r => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cm-speed-btn' + (r === currentRate ? ' active' : '');
+      btn.textContent = r % 1 === 0 ? r.toFixed(1) : String(r);
+      btn.addEventListener('click', () => {
+        currentRate = r;
+        video.playbackRate = r;
+        bar.querySelectorAll('.cm-speed-btn').forEach(b => b.classList.toggle('active', b === btn));
+      });
+      bar.appendChild(btn);
+    });
+    return bar;
+  };
+
+  const openModal = (href, title) => {
+    if (!href) return;
+    clearBody();
+
+    modal.querySelector('.cm-modal-title').textContent = title || href;
+    modal.querySelector('.cm-modal-ext').href = href;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    const ext = getExt(href);
+
+    // ── Vídeo: player nativo + barra de velocidade ──
+    if (VIDEO_EXT.has(ext)) {
+      const video = document.createElement('video');
+      video.controls = true;
+      video.src      = href;
+      video.preload  = 'metadata';
+      video.playsInline = true;
+      video.playbackRate = currentRate;
+      video.addEventListener('loadedmetadata', () => { video.playbackRate = currentRate; });
+      mBody.appendChild(video);
+      mBody.appendChild(buildSpeedBar(video));
+      return;
+    }
+
+    // ── HTML: renderiza como página (srcdoc, imune a frame-src/blob:) ──
+    if (HTML_EXT.has(ext)) {
+      mLoading.style.display = 'flex';
+      fetchTexto(href)
+        .then(html => {
+          // <base> para que CSS/imagens/links relativos continuem funcionando
+          const dir = href.slice(0, href.lastIndexOf('/') + 1).replace(/"/g, '%22');
+          if (!/<base\s/i.test(html)) {
+            const baseTag = `<base href="${dir}">`;
+            if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, m => m + baseTag);
+            else html = baseTag + html;
+          }
+          makeIframe(null, html);
+        })
+        .catch(() => makeIframe(href)); // tudo falhou? tenta iframe direto
+      return;
+    }
+
+    // ── Outros arquivos: iframe normal ──
+    makeIframe(href);
+  };
+
+  function fecharModal() {
+    modal.classList.remove('open');
+    document.body.style.removeProperty('overflow');
+    clearBody(); // pausa vídeo e libera o iframe
+  }
+
+  modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
+  modal.querySelector('.cm-modal-close').addEventListener('click', fecharModal);
+
+  // ── 5. Menu de módulos/aulas (portado, mesmo visual) ─────────────
+  function renderMenu({ course, modules, totalLessons }) {
+    fallbackAnchors = [];
+    wrapMenu.innerHTML = `
+      <div id="course-menu-ai">
+        <div class="cm-header">
+          <span class="cm-badge">🎓 Curso</span>
+          <h2 class="cm-title">${esc(course.replace(/\/$/, '')) || 'Curso'}</h2>
+          <p class="cm-meta">${modules.size} módulo(s) · ${totalLessons} aula(s)</p>
+        </div>
+        ${[...modules.entries()].map(([mod, lessons]) => `
+          <div class="cm-module open">
+            <div class="cm-module-head">
+              <span class="cm-arrow">▶</span>
+              <span>📁 ${esc(mod)}</span>
+              <span class="cm-count">${lessons.length} aula(s)</span>
+            </div>
+            <div class="cm-lessons">
+              ${lessons.map((l, i) => {
+                const num  = `<span class="cm-num">${String(i + 1).padStart(2, '0')}</span>`;
+                const name = `<span class="cm-name">${esc(l.lesson)}</span>`;
+                if (l.href) {
+                  return `<div class="cm-lesson">
+                            <a class="cm-link" href="${esc(l.href)}" title="Abrir: ${esc(l.lesson)}">${num}${name}</a>
+                          </div>`;
+                }
+                const idx = fallbackAnchors.push(l.anchor) - 1;
+                return `<div class="cm-lesson">
+                          <div class="cm-link" data-fallback="${idx}" title="Abrir: ${esc(l.lesson)}">${num}${name}</div>
+                        </div>`;
+              }).join('')}
+            </div>
+          </div>`).join('')}
+      </div>`;
+
+    // accordion (elementos são recriados a cada curso)
+    wrapMenu.querySelectorAll('.cm-module-head').forEach(head => {
+      head.addEventListener('click', () => head.parentElement.classList.toggle('open'));
+    });
+    window.scrollTo(0, 0);
+  }
+
+  // listener único de clique nas aulas (o wrapMenu persiste)
+  wrapMenu.addEventListener('click', e => {
+    const link = e.target.closest('.cm-link');
+    if (!link) return;
+    e.preventDefault();
+    const name = link.querySelector('.cm-name')?.textContent.trim();
+    const href = link.getAttribute('href') ||
+                 fallbackAnchors[+link.dataset.fallback]?.href || null;
+    openModal(href, name);
+  });
+
+  // ── 6. Carregar curso a partir do link informado ─────────────────
+  async function carregarCurso(url) {
+    urlAtual = url;
+    loadUrl.textContent = url;
+    mostrar('load');
+    try {
+      const html = await fetchTexto(url);
+      const rows = parseListagem(html, url);
+      if (!rows.length) throw new Error('A página foi baixada, mas não encontrei a tabela com a lista de arquivos. Confira se o link é de uma listagem (view_archive.php).');
+      const dados = agrupar(rows);
+      if (!dados.totalLessons) throw new Error('A listagem foi lida, mas não há arquivos de aula nela.');
+      renderMenu(dados);
+      mostrar('menu');
+      try {
+        history.replaceState(null, '', location.pathname + '?url=' + encodeURIComponent(url));
+        localStorage.setItem(CHAVE_ULTIMA, url);
+      } catch {}
+    } catch (e) {
+      erroMsg.textContent = e.message || 'Falha desconhecida.';
+      linkNovaAbaErro.href = url;
+      txtManual.value = '';
+      manualErro.hidden = true;
+      areaManual.open = false;
+      mostrar('erro');
+    }
+  }
+
+  function processarManual() {
+    manualErro.hidden = true;
+    const html = txtManual.value.trim();
+    if (!html) {
+      manualErro.textContent = 'Cole o código-fonte da página primeiro.';
+      manualErro.hidden = false;
+      return;
+    }
+    const url = urlAtual || normalizar(input.value) || 'https://archive.org/';
+    try {
+      const rows = parseListagem(html, url);
+      if (!rows.length) throw new Error('Nenhuma tabela de arquivos encontrada nesse HTML.');
+      const dados = agrupar(rows);
+      if (!dados.totalLessons) throw new Error('Esse HTML não contém arquivos de aula.');
+      renderMenu(dados);
+      mostrar('menu');
+      try {
+        localStorage.setItem(CHAVE_ULTIMA, url);
+        history.replaceState(null, '', location.pathname + '?url=' + encodeURIComponent(url));
+      } catch {}
+    } catch (e) {
+      manualErro.textContent = e.message;
+      manualErro.hidden = false;
+    }
+  }
+
+  // ── 7. Eventos ───────────────────────────────────────────────────
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    homeErro.hidden = true;
+    const url = normalizar(input.value);
+    if (!url) {
+      homeErro.textContent = 'Cole o link da listagem (view_archive.php…).';
+      homeErro.hidden = false; input.focus(); return;
+    }
+    try { new URL(url); } catch {
+      homeErro.textContent = 'Esse endereço não parece uma URL válida.';
+      homeErro.hidden = false; input.focus(); return;
+    }
+    carregarCurso(url);
+  });
+
+  btnRetry.addEventListener('click', () => { if (urlAtual) carregarCurso(urlAtual); });
+  btnVoltarErro.addEventListener('click', irParaHome);
+  btnProcessar.addEventListener('click', processarManual);
+  voltarHome.addEventListener('click', irParaHome);
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (modal.classList.contains('open')) fecharModal();      // fecha a aula → menu
+    else if (!wrapMenu.hidden) irParaHome();                   // fecha o curso → home
+  });
+
+  // ── 8. Inicialização ─────────────────────────────────────────────
+  let qs = '';
+  try { qs = new URLSearchParams(location.search).get('url') || ''; } catch {}
+  const qsUrl = normalizar(qs);
+  if (qsUrl) {
+    input.value = qsUrl;
+    carregarCurso(qsUrl);                 // ?url=… abre o curso direto
+  } else {
+    try {
+      const ultima = localStorage.getItem(CHAVE_ULTIMA);
+      if (ultima) input.value = ultima;   // última URL fica preenchida
+    } catch {}
+    mostrar('home');
+  }
+})();
+</script>
+</body>
+</html>
