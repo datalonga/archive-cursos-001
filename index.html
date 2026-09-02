@@ -18,7 +18,7 @@
   button{font-family:inherit}
   a{color:var(--accent)}
 
-  /* ── X discreto (canto sup. direito do menu → volta para a home) ── */
+  /* ── X discreto ── */
   #voltar-home{position:fixed;top:12px;right:12px;z-index:500;width:32px;height:32px;
     display:grid;place-items:center;border:1px solid var(--border);border-radius:8px;
     background:rgba(22,27,34,.85);color:var(--muted);font-size:13px;line-height:1;
@@ -105,17 +105,17 @@
     padding-right:4px
   }
   .curso-opcao{
-    width:100%;display:flex;align-items:center;gap:10px;text-align:left;
+    width:100%;display:flex;align-items:flex-start;gap:10px;text-align:left;
     background:var(--bg);color:var(--txt);border:1px solid var(--border);
-    border-radius:9px;padding:10px 12px;font-size:13px;cursor:pointer;
-    transition:.15s
+    border-radius:9px;padding:12px 14px;font-size:13px;cursor:pointer;
+    transition:.15s;line-height:1.4
   }
   .curso-opcao:hover{border-color:var(--accent);background:#1c2129}
   .curso-opcao-num{
-    color:var(--accent2);font-size:11px;font-weight:700;min-width:24px
+    color:var(--accent2);font-size:11px;font-weight:700;min-width:24px;margin-top:2px
   }
-  .curso-opcao-nome{flex:1;line-height:1.35}
-  .curso-opcao-arrow{color:var(--muted);font-size:12px}
+  .curso-opcao-nome{flex:1;line-height:1.45;padding:1px 0}
+  .curso-opcao-arrow{color:var(--muted);font-size:12px;margin-top:2px;flex-shrink:0}
   #btn-mostrar-cursos{
     width:100%;margin-top:20px;padding:10px 14px;background:var(--bg);
     color:var(--muted);border:1px solid var(--border);border-radius:9px;
@@ -142,14 +142,14 @@
   .cm-lesson{border-bottom:1px solid #21262d;transition:background .15s}
   .cm-lesson:last-child{border-bottom:none}
   .cm-lesson:hover{background:#1c2129}
-  .cm-link{display:flex;align-items:center;gap:12px;
-    padding:11px 18px;color:var(--txt);text-decoration:none;cursor:pointer;transition:padding-left .15s}
+  .cm-link{display:flex;align-items:flex-start;gap:12px;
+    padding:12px 18px;color:var(--txt);text-decoration:none;cursor:pointer;transition:padding-left .15s;line-height:1.4}
   .cm-lesson:hover .cm-link{padding-left:24px}
-  .cm-num{color:var(--accent2);font-size:11px;font-weight:700;min-width:22px}
-  .cm-name{flex:1;word-break:break-word}
+  .cm-num{color:var(--accent2);font-size:11px;font-weight:700;min-width:22px;margin-top:2px}
+  .cm-name{flex:1;word-break:break-word;line-height:1.45;padding:1px 0}
   .cm-lesson:hover .cm-name{color:var(--accent)}
 
-  /* ── Modal ── */
+  /* ── Modal ─ */
   #course-modal-ai{position:fixed;inset:0;z-index:99999;display:none;
     background:rgba(1,4,9,.82);backdrop-filter:blur(6px);color:var(--txt)}
   #course-modal-ai.open{display:flex}
@@ -183,9 +183,8 @@
   .cm-speed-btn:hover{color:var(--txt);border-color:var(--accent)}
   .cm-speed-btn.active{color:#fff;background:var(--accent);border-color:var(--accent)}
 
-  /* ── RESPONSIVIDADE MOBILE APRIMORADA ── */
+  /* ── RESPONSIVIDADE MOBILE ─ */
   @media(max-width:640px){
-    /* Modal em tela cheia real no mobile para maximizar espaço de vídeo/leitura */
     .cm-modal-box{
       width:100%;
       height:100dvh;
@@ -193,7 +192,6 @@
       margin:0;
     }
     
-    /* Previne zoom automático no iOS ao focar em inputs */
     #url, #busca-cursos{
       font-size:16px;
       padding:14px 16px;
@@ -211,22 +209,22 @@
       width:100%;
     }
 
-    /* Tipografia geral mais legível */
     .cm-title{ font-size:24px; }
     .cm-meta, .cm-dica{ font-size:15px; line-height:1.6; }
     
     .curso-seletor-titulo{ font-size:13px; margin-bottom:12px; }
     
-    /* Alvos de toque maiores para dedos */
+    /* CORREÇÃO: alinhamento vertical correto para textos longos */
     .curso-opcao{
       font-size:15px;
       padding:14px 16px;
-      min-height:48px;
+      align-items:flex-start;
+      line-height:1.5;
     }
-    .curso-opcao-num{ font-size:13px; min-width:28px; }
-    .curso-opcao-arrow{ font-size:14px; }
+    .curso-opcao-num{ font-size:13px; min-width:28px; margin-top:3px; }
+    .curso-opcao-nome{ line-height:1.5; padding:2px 0; }
+    .curso-opcao-arrow{ font-size:14px; margin-top:3px; }
 
-    /* Menu de módulos ajustado */
     #course-menu-ai{
       margin:0;
       padding:20px 16px;
@@ -242,11 +240,12 @@
     .cm-link{
       font-size:15px;
       padding:14px 16px;
-      min-height:48px;
+      align-items:flex-start;
+      line-height:1.5;
     }
-    .cm-num{ font-size:13px; min-width:26px; }
+    .cm-num{ font-size:13px; min-width:26px; margin-top:3px; }
+    .cm-name{ line-height:1.5; padding:2px 0; }
 
-    /* Header do modal e controles de velocidade */
     .cm-modal-head{ padding:14px 16px; }
     .cm-modal-title{ font-size:15px; }
     .cm-modal-ext, .cm-modal-close{
@@ -259,7 +258,6 @@
       padding:8px 16px;
     }
     
-    /* Botão voltar home maior e acessível */
     #voltar-home{
       width:44px;
       height:44px;
@@ -272,15 +270,13 @@
 </head>
 <body>
 
-  <!-- X discreto: fecha o curso atual e volta para a área de informar link -->
   <button id="voltar-home" type="button" hidden
           title="Fechar curso e informar outro link (Esc)" aria-label="Fechar curso">✕</button>
 
-  <!-- Tela 1: seleção do curso -->
   <section id="home" class="tela">
     <div class="cartao">
       <div class="cm-header">
-        <span class="cm-badge">🎓 Archive Player</span>
+        <span class="cm-badge"> Archive Player</span>
         <h1 class="cm-title">Escolha um curso</h1>
         <p class="cm-meta">Selecione um curso da lista para abrir seus módulos e aulas.</p>
       </div>
@@ -291,7 +287,6 @@
           <button id="btn-ocultar-cursos" type="button">Ocultar</button>
         </div>
         
-        <!-- Campo de busca em tempo real -->
         <div id="curso-search-wrapper">
           <input id="busca-cursos" type="search" autocomplete="off" spellcheck="false"
                  placeholder="🔍 Buscar curso por nome...">
@@ -322,7 +317,6 @@
     </div>
   </section>
 
-  <!-- Tela 2: carregando a listagem -->
   <section id="tela-load" class="tela" hidden>
     <div class="centro">
       <div class="cm-spinner"></div>
@@ -331,7 +325,6 @@
     </div>
   </section>
 
-  <!-- Tela 3: falha ao baixar / parsear -->
   <section id="tela-erro" class="tela" hidden>
     <div class="cartao cartao-erro">
       <div class="cm-header">
@@ -356,10 +349,8 @@
     </div>
   </section>
 
-  <!-- Tela 4: menu de módulos/aulas -->
   <div id="wrap-menu" hidden></div>
 
-  <!-- Modal de aula -->
   <div id="course-modal-ai" role="dialog" aria-modal="true">
     <div class="cm-modal-box">
       <div class="cm-modal-head">
@@ -377,7 +368,6 @@
 (() => {
   'use strict';
 
-  // ── Referências ──────────────────────────────────────────────────
   const $ = s => document.querySelector(s);
   const form = $('#form'), input = $('#url'), homeErro = $('#home-erro');
   const telas = { home: $('#home'), load: $('#tela-load'), erro: $('#tela-erro'), menu: $('#wrap-menu') };
@@ -405,7 +395,6 @@
     return v;
   };
 
-  // ── Estados das telas ────────────────────────────────────────────
   function mostrar(nome) {
     for (const [k, el] of Object.entries(telas)) el.hidden = k !== nome;
     voltarHome.hidden = nome !== 'menu';
@@ -421,7 +410,6 @@
     setTimeout(() => input.focus({ preventScroll: true }), 60);
   }
 
-  // ── Fetch com fallback de proxies ──
   const ROTAS = [
     u => u,
     u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
@@ -445,7 +433,6 @@
     throw new Error('Não consegui baixar a página (acesso direto e proxies falharam). Use o plano B abaixo.');
   }
 
-  // ── 1. Extração ──────────────────────────────────────────────────
   const isHeaderCol = t => /^(file|as jpg|timestamp|size)$/i.test(t);
 
   const buildRows = trs => trs.map(tr => {
@@ -487,7 +474,6 @@
     return buildRows(trs);
   }
 
-  // ── 2. Detecta o nome do curso ───────────────────────────────────
   const detectCourse = paths => {
     if (paths.length === 1) {
       const i = paths[0].indexOf('/');
@@ -503,7 +489,6 @@
     return cut > -1 ? prefix.slice(0, cut + 1) : '';
   };
 
-  // ── 3. Ignora pastas, agrupa por módulo ──────────────────────────
   const isDirectory = r => {
     if (r.file.endsWith('/')) return true;
     const last = r.file.replace(/\/+$/, '').split('/').pop();
@@ -528,7 +513,6 @@
     return { course, modules, totalLessons };
   };
 
-  // ── 4. Modal ─────────────────────────────────────────────────────
   const RATES = [1, 1.25, 1.5, 1.75, 2];
   const VIDEO_EXT = new Set(['mp4', 'webm', 'm4v', 'mov', 'ogv']);
   const HTML_EXT  = new Set(['html', 'htm']);
@@ -636,7 +620,6 @@
   modal.addEventListener('click', e => { if (e.target === modal) fecharModal(); });
   modal.querySelector('.cm-modal-close').addEventListener('click', fecharModal);
 
-  // ── 5. Menu de módulos/aulas ─────────────────────────────────────
   function renderMenu({ course, modules, totalLessons }) {
     fallbackAnchors = [];
     wrapMenu.innerHTML = `
@@ -650,7 +633,7 @@
           <div class="cm-module open">
             <div class="cm-module-head">
               <span class="cm-arrow">▶</span>
-              <span>📁 ${esc(mod)}</span>
+              <span> ${esc(mod)}</span>
               <span class="cm-count">${lessons.length} aula(s)</span>
             </div>
             <div class="cm-lessons">
@@ -687,7 +670,6 @@
     openModal(href, name);
   });
 
-  // ── 6. Carregar curso a partir do link informado ─────────────────
   async function carregarCurso(url, nomeCurso = null) {
     urlAtual = url;
     loadUrl.textContent = url;
@@ -740,7 +722,6 @@
     }
   }
 
-  // ── 7. Eventos ───────────────────────────────────────────────────
   form.addEventListener('submit', e => {
     e.preventDefault();
     homeErro.hidden = true;
@@ -767,8 +748,6 @@
     else if (!wrapMenu.hidden) irParaHome();
   });
 
-
-  // ── Cursos embutidos na própria página ───────────────────────────
 const CURSOS = [
     { nome: 'Consultas com SQL: Joins, Views e transações', url: 'https://archive.org/download/6186_20260828_230805/6186.zip/' },
     { nome: 'Claude e Lovable: do problema ao protótipo funcional', url: 'https://archive.org/download/6105_20260828_230507/6105.zip/' },
@@ -3098,7 +3077,6 @@ const CURSOS = [
 
   renderCursos();
 
-  // ── 8. Inicialização ─────────────────────────────────────────────
   let qs = '';
   try { qs = new URLSearchParams(location.search).get('url') || ''; } catch {}
   const qsUrl = normalizar(qs);
