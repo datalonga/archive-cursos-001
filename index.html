@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="color-scheme" content="dark">
 <title>Archive Player — cursos</title>
 <style>
@@ -41,10 +41,13 @@
 
   /* home */
   .form-url{display:flex;gap:8px}
-  #url{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;
-    color:var(--txt);font-size:14px;padding:13px 14px;outline:0;transition:border-color .15s;font-family:inherit}
-  #url:focus{border-color:var(--accent)}
-  #url::placeholder{color:#484f58}
+  #url, #busca-cursos{
+    flex:1;min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    color:var(--txt);font-size:14px;padding:13px 14px;outline:0;transition:border-color .15s;font-family:inherit;
+    -webkit-appearance:none;appearance:none;
+  }
+  #url:focus, #busca-cursos:focus{border-color:var(--accent)}
+  #url::placeholder, #busca-cursos::placeholder{color:#484f58}
   .btn-primario{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
     background:var(--accent);color:#04121f;border:0;border-radius:10px;
     padding:0 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
@@ -93,14 +96,9 @@
   }
   #btn-ocultar-cursos:hover{color:var(--accent);border-color:var(--accent)}
   
-  /* Campo de busca */
   #busca-cursos{
-    width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;
-    color:var(--txt);font-size:13px;padding:10px 12px;outline:0;transition:border-color .15s;
-    font-family:inherit;margin-bottom:10px
+    width:100%;margin-bottom:10px;
   }
-  #busca-cursos:focus{border-color:var(--accent)}
-  #busca-cursos::placeholder{color:#484f58}
 
   #lista-cursos{
     display:flex;flex-direction:column;gap:6px;max-height:310px;overflow-y:auto;
@@ -126,7 +124,7 @@
   #btn-mostrar-cursos:hover{color:var(--accent);border-color:var(--accent)}
   .curso-vazio{color:var(--muted);font-size:12px;text-align:center;padding:14px}
 
-  /* ── Menu de módulos/aulas (visual do script) ── */
+  /* ── Menu de módulos/aulas ── */
   #course-menu-ai{background:var(--card);border:1px solid var(--border);border-radius:16px;
     padding:28px;max-width:860px;margin:24px auto;color:var(--txt)}
   .cm-module{background:var(--card);border:1px solid var(--border);
@@ -151,7 +149,7 @@
   .cm-name{flex:1;word-break:break-word}
   .cm-lesson:hover .cm-name{color:var(--accent)}
 
-  /* ── Modal (visual do script) ── */
+  /* ── Modal ── */
   #course-modal-ai{position:fixed;inset:0;z-index:99999;display:none;
     background:rgba(1,4,9,.82);backdrop-filter:blur(6px);color:var(--txt)}
   #course-modal-ai.open{display:flex}
@@ -185,11 +183,90 @@
   .cm-speed-btn:hover{color:var(--txt);border-color:var(--accent)}
   .cm-speed-btn.active{color:#fff;background:var(--accent);border-color:var(--accent)}
 
+  /* ── RESPONSIVIDADE MOBILE APRIMORADA ── */
   @media(max-width:640px){
-    .cm-modal-box{width:calc(100vw - 20px);height:calc(100vh - 20px);height:calc(100dvh - 20px)}
-    .form-url{flex-direction:column}
-    .btn-primario{padding:12px 20px;justify-content:center}
-    #course-menu-ai{margin:16px 10px;padding:20px 16px}
+    /* Modal em tela cheia real no mobile para maximizar espaço de vídeo/leitura */
+    .cm-modal-box{
+      width:100%;
+      height:100dvh;
+      border-radius:0;
+      margin:0;
+    }
+    
+    /* Previne zoom automático no iOS ao focar em inputs */
+    #url, #busca-cursos{
+      font-size:16px;
+      padding:14px 16px;
+    }
+    
+    .form-url{
+      flex-direction:column;
+      gap:12px;
+    }
+    
+    .btn-primario{
+      padding:14px 20px;
+      font-size:16px;
+      justify-content:center;
+      width:100%;
+    }
+
+    /* Tipografia geral mais legível */
+    .cm-title{ font-size:24px; }
+    .cm-meta, .cm-dica{ font-size:15px; line-height:1.6; }
+    
+    .curso-seletor-titulo{ font-size:13px; margin-bottom:12px; }
+    
+    /* Alvos de toque maiores para dedos */
+    .curso-opcao{
+      font-size:15px;
+      padding:14px 16px;
+      min-height:48px;
+    }
+    .curso-opcao-num{ font-size:13px; min-width:28px; }
+    .curso-opcao-arrow{ font-size:14px; }
+
+    /* Menu de módulos ajustado */
+    #course-menu-ai{
+      margin:0;
+      padding:20px 16px;
+      border-radius:0;
+      min-height:100dvh;
+      border:none;
+    }
+    .cm-module-head{
+      font-size:16px;
+      padding:16px;
+    }
+    .cm-count{ font-size:12px; padding:4px 12px; }
+    .cm-link{
+      font-size:15px;
+      padding:14px 16px;
+      min-height:48px;
+    }
+    .cm-num{ font-size:13px; min-width:26px; }
+
+    /* Header do modal e controles de velocidade */
+    .cm-modal-head{ padding:14px 16px; }
+    .cm-modal-title{ font-size:15px; }
+    .cm-modal-ext, .cm-modal-close{
+      height:40px;
+      min-width:40px;
+      font-size:14px;
+    }
+    .cm-speed-btn{
+      font-size:14px;
+      padding:8px 16px;
+    }
+    
+    /* Botão voltar home maior e acessível */
+    #voltar-home{
+      width:44px;
+      height:44px;
+      font-size:18px;
+      top:16px;
+      right:16px;
+    }
   }
 </style>
 </head>
@@ -214,7 +291,7 @@
           <button id="btn-ocultar-cursos" type="button">Ocultar</button>
         </div>
         
-        <!-- NOVO: Campo de busca em tempo real -->
+        <!-- Campo de busca em tempo real -->
         <div id="curso-search-wrapper">
           <input id="busca-cursos" type="search" autocomplete="off" spellcheck="false"
                  placeholder="🔍 Buscar curso por nome...">
@@ -279,10 +356,10 @@
     </div>
   </section>
 
-  <!-- Tela 4: menu de módulos/aulas (mesma marcação do script) -->
+  <!-- Tela 4: menu de módulos/aulas -->
   <div id="wrap-menu" hidden></div>
 
-  <!-- Modal de aula (mesma marcação do script) -->
+  <!-- Modal de aula -->
   <div id="course-modal-ai" role="dialog" aria-modal="true">
     <div class="cm-modal-box">
       <div class="cm-modal-head">
@@ -315,8 +392,8 @@
   const mLoading = modal.querySelector('.cm-modal-loading');
 
   const CHAVE_ULTIMA = 'curso:url';
-  let urlAtual = null;        // URL da listagem carregada
-  let fallbackAnchors = [];   // aulas sem <a> direto (portado do script)
+  let urlAtual = null;
+  let fallbackAnchors = [];
 
   const esc = s => String(s).replace(/[&<>"']/g, c =>
     ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -338,7 +415,6 @@
   function irParaHome() {
     fecharModal();
     mostrar('home');
-    // Limpa a busca e restaura a lista completa ao voltar para a home
     buscaCursos.value = '';
     renderCursos();
     try { history.replaceState(null, '', location.pathname); } catch {}
@@ -347,7 +423,7 @@
 
   // ── Fetch com fallback de proxies ──
   const ROTAS = [
-    u => u, // direto
+    u => u,
     u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
     u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
     u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
@@ -2968,12 +3044,9 @@ const CURSOS = [
   const listaCursos = $('#lista-cursos');
   const btnOcultarCursos = $('#btn-ocultar-cursos');
   const btnMostrarCursos = $('#btn-mostrar-cursos');
-  
-  // NOVO: Referências do campo de busca
   const buscaCursos = $('#busca-cursos');
   const cursoSearchWrapper = $('#curso-search-wrapper');
 
-  // Função auxiliar para normalizar texto (remove acentos e coloca em minúsculas)
   const normalizeStr = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   function renderCursos(filtro = '') {
@@ -2998,7 +3071,6 @@ const CURSOS = [
     }).join('');
   }
 
-  // Evento de digitação no campo de busca
   buscaCursos.addEventListener('input', e => {
     renderCursos(e.target.value);
   });
@@ -3012,19 +3084,19 @@ const CURSOS = [
 
   btnOcultarCursos.addEventListener('click', () => {
     listaCursos.hidden = true;
-    cursoSearchWrapper.hidden = true; // Oculta também a busca
+    cursoSearchWrapper.hidden = true;
     btnOcultarCursos.hidden = true;
     btnMostrarCursos.hidden = false;
   });
 
   btnMostrarCursos.addEventListener('click', () => {
     listaCursos.hidden = false;
-    cursoSearchWrapper.hidden = false; // Mostra também a busca
+    cursoSearchWrapper.hidden = false;
     btnOcultarCursos.hidden = false;
     btnMostrarCursos.hidden = true;
   });
 
-  renderCursos(); // Renderização inicial
+  renderCursos();
 
   // ── 8. Inicialização ─────────────────────────────────────────────
   let qs = '';
